@@ -2,6 +2,11 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+local freezeColor = Color(0, 100, 120, 255)
+local defaultColor = Color(255, 255, 255, 255)
+
+//HOOKS
+
 function ENT:Initialize()
 	//Setup entity
 	self:SetModel("models/hunter/tubes/tube2x2x2b.mdl")
@@ -36,29 +41,6 @@ function ENT:Initialize()
 end
 
 function ENT:Use(cause, caller)
-	//Get the corners of the chamber
-	local topCorner = self:OBBMaxs() + self:GetPos()
-	local bottomCorner = self:OBBMins() + self:GetPos()
-
-	//enumerate players
-	for count,value in pairs(player.GetAll()) do
-		local isInChamber = value:GetPos():WithinAABox(bottomCorner, topCorner) || value:GetPos():WithinAABox(topCorner, bottomCorner)
-		if(isInChamber) then
-			self:DoFreeze(value, !value:IsFrozen())
-		end
-	end
-	
-	//enumerate ents
-	for count,value in pairs(ents.GetAll()) do
-		local isInChamber = value:GetPos():WithinAABox(bottomCorner, topCorner) || value:GetPos():WithinAABox(topCorner, bottomCorner)
-		local isExcluded = value == self.roof || value == self.floor || value == self.door || value == self
-		
-		if(isInChamber && !isExcluded) then
-			local physObj = value:GetPhysicsObject()
-			if(IsValid(physObj)) then self:DoFreeze(value, physObj:IsMoveable() && !constraint.HasConstraints(value)) end
-		end
-	end
-	
 	//Close or open the door
 	self.state = self.door:ChangeDoorState()
 	
@@ -68,54 +50,10 @@ function ENT:Use(cause, caller)
 	net.Broadcast()
 end
 
-function ENT:DoFreeze(object, isFreeze)
-	local physObj = object:GetPhysicsObject()
-
-	//Logic for players
-	if(object:IsPlayer()) then
-		object:Freeze(isFreeze)
-		object:SetMoveType(isFreeze and MOVETYPE_NONE or MOVETYPE_WALK)
-	//Logic for physics objects
-	elseif(IsValid(physObj) && !object:IsRagdoll()) then
-		physObj:EnableMotion(!isFreeze)
-		if(!isFreeze) then
-			physObj:Wake()
-		end
-	end
-	
-	//Logic for NPCs
-	if(object:IsNPC()) then
-		if(isFreeze) then object:SentenceStop() end
-		object:SetCondition(isFreeze and 67 or 68)
-	end
-	
-	//Logic for ragdolls parenting doesn't seem to work on bones :(
-	if(object:IsRagdoll()) then
-		if(isFreeze) then
-			local bonesCount = object:GetPhysicsObjectCount()
-			for bone = 1, bonesCount - 1 do
-				//Weld limb to chamber
-				constraint.Weld(self, object, 0, bone, 0)
-			
-				//Weld to self
-				constraint.Weld(object, object, 0, bone, 0)
-			end
-		else
-			//Unweld the ragdoll
-			constraint.RemoveAll(object)
-		end
-	end
-		
-	//Shared Logic
-	object:SetColor(isFreeze and Color(0, 100, 120, 255) or Color(255, 255, 255, 255))
-	object:SetParent(isFreeze and self or nil)
-end
-
 function ENT:OnRemove()
 	//Make sure nothing is stuck frozen
-	for count,value in pairs(self:GetChildren()) do
-		self:DoFreeze(value, false)
-	end
+	self.state = false
+	self:Think()
 	
 	//Make sure the rest of the object is disposed
 	if(IsValid(self.door)) then self.door:Remove() end
@@ -123,6 +61,7 @@ function ENT:OnRemove()
 	if(IsValid(self.floor)) then self.floor:Remove() end
 end
 
+//Overrides the default spawning behaviour
 function ENT:SpawnFunction(spawnPlayer, traceTable, objectClass)
 	if(traceTable.Hit) then
 		local ent = ents.Create(objectClass)
@@ -134,8 +73,25 @@ function ENT:SpawnFunction(spawnPlayer, traceTable, objectClass)
 end
 
 function ENT:Think()
+	//If something is missing from the chamber, it should delete itself
 	if(!(IsValid(self) && IsValid(self.door) && IsValid(self.roof) && IsValid(self.floor))) then
 		self:Remove()
+	end
+	
+	//enumerate ents
+	for count,value in pairs(ents.GetAll()) do
+		local isExcluded = value == self.roof || value == self.floor || value == self.door || value == self
+		if(self:IsInChamber(value) && !isExcluded) then
+			if(value:IsRagdoll()) then
+				self:DoFreezeRagdoll(value, self.state)
+			elseif(value:IsPlayer()) then
+				self:DoFreezePlayer(value, self.state)
+			elseif(value:IsNPC()) then
+				self:DoFreezeNPC(value, self.state)
+			else
+				self:DoFreezeEnt(value, self.state)
+			end
+		end
 	end
 	
 	//Make the frosty smoke
@@ -144,4 +100,74 @@ function ENT:Think()
 		data:SetOrigin(self:GetPos() + Vector(0,0,42))
 		util.Effect("Frost", data)
 	end
+end
+
+//METHODS
+
+function ENT:DoFreezePlayer(thePlayer, isFreeze)
+		thePlayer:Freeze(isFreeze)
+		thePlayer:SetMoveType(isFreeze and MOVETYPE_NONE or MOVETYPE_WALK)
+		thePlayer:SetColor(isFreeze and freezeColor or defaultColor)
+		self:AttachMoveChild(thePlayer, isFreeze)
+end
+
+function ENT:DoFreezeRagdoll(ragdoll, isFreeze)
+		if(isFreeze) then
+			local bonesCount = ragdoll:GetPhysicsObjectCount()
+			for bone = 1, bonesCount - 1 do
+				//Weld limb to chamber
+				constraint.Weld(self, ragdoll, 0, bone, 0)
+			
+				//Weld to self
+				constraint.Weld(ragdoll, ragdoll, 0, bone, 0)
+			end
+		else
+			//Unweld the ragdoll
+			constraint.RemoveAll(ragdoll)
+		end
+		
+		ragdoll:SetColor(isFreeze and freezeColor or defaultColor)
+end
+
+function ENT:DoFreezeNPC(npc, isFreeze)
+	//Shut the npc up, popsicles don't talk.
+	if(isFreeze) then npc:SentenceStop() end
+	
+	//Tell the npc to idle or just act normal
+	npc:SetCondition(isFreeze and 67 or 68)
+	
+	npc:SetColor(isFreeze and freezeColor or defaultColor)
+	self:AttachMoveChild(npc, isFreeze)
+end
+
+function ENT:DoFreezeEnt(entity, isFreeze)
+		//Disable or enable movement
+		local physObj = entity:GetPhysicsObject()
+		if(IsValid(physObj)) then
+			physObj:EnableMotion(!isFreeze)
+			if(!isFreeze) then
+				physObj:Wake()
+			end
+		end
+		
+		//Don't unparent or parent an item without a base, it's probably a viewmodel/held item
+		if(entity.Base != nil) then self:AttachMoveChild(entity, isFreeze) end
+		
+		entity:SetColor(isFreeze and freezeColor or defaultColor)
+end
+
+function ENT:AttachMoveChild(entity, isAttach)
+	local parent = isAttach and self or nil
+	if(IsValid(entity:GetParent()) == !isAttach) then
+		entity:SetParent(parent)
+	end
+end
+
+function ENT:IsInChamber(entity)
+	//Get the corners of the chamber
+	local topCorner = self:OBBMaxs() + self:GetPos()
+	local bottomCorner = self:OBBMins() + self:GetPos()
+
+	//Check to see if the entity is within the box, I think this method only works with the corners in the right order so check both ways
+	return entity:GetPos():WithinAABox(bottomCorner, topCorner) || entity:GetPos():WithinAABox(topCorner, bottomCorner)
 end
