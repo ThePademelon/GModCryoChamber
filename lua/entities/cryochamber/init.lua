@@ -88,6 +88,8 @@ function ENT:Think()
 				self:DoFreezePlayer(value, self.state)
 			elseif(value:IsNPC()) then
 				self:DoFreezeNPC(value, self.state)
+			elseif(value.Base == "base_nextbot") then
+				self:DoFreezeNextBot(value, self.state)
 			else
 				self:DoFreezeEnt(value, self.state)
 			end
@@ -138,6 +140,22 @@ function ENT:DoFreezeNPC(npc, isFreeze)
 	
 	npc:SetColor(isFreeze and freezeColor or defaultColor)
 	self:AttachMoveChild(npc, isFreeze)
+end
+
+function ENT:DoFreezeNextBot(nextbot, isFreeze)
+	//Freeze the nextbot with flags since Lock and Freeze don't work on NextBots
+	if(!nextbot:IsFlagSet(FL_FROZEN) && isFreeze) then
+		nextbot:AddFlags(FL_FROZEN)
+	elseif(nextbot:IsFlagSet(FL_FROZEN) && !isFreeze) then
+		nextbot:RemoveFlags(FL_FROZEN)
+	end
+	
+	//The PUSH movetype causes issues with parenting so remove it first before parenting
+	nextbot:SetMoveType(isFreeze and MOVETYPE_NONE or MOVETYPE_PUSH)
+	self:AttachMoveChild(nextbot, isFreeze)
+	
+	//Set the color to that frosty blue
+	nextbot:SetColor(isFreeze and freezeColor or defaultColor)
 end
 
 function ENT:DoFreezeEnt(entity, isFreeze)
