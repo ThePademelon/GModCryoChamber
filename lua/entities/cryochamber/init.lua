@@ -55,7 +55,7 @@ function ENT:Use(cause, caller)
 		
 		if(isInChamber && !isExcluded) then
 			local physObj = value:GetPhysicsObject()
-			if(IsValid(physObj)) then self:DoFreeze(value, physObj:IsMoveable()) end
+			if(IsValid(physObj)) then self:DoFreeze(value, physObj:IsMoveable() && !constraint.HasConstraints(value)) end
 		end
 	end
 	
@@ -76,7 +76,7 @@ function ENT:DoFreeze(object, isFreeze)
 		object:Freeze(isFreeze)
 		object:SetMoveType(isFreeze and MOVETYPE_NONE or MOVETYPE_WALK)
 	//Logic for physics objects
-	elseif(IsValid(physObj)) then
+	elseif(IsValid(physObj) && !object:IsRagdoll()) then
 		physObj:EnableMotion(!isFreeze)
 		if(!isFreeze) then
 			physObj:Wake()
@@ -87,6 +87,23 @@ function ENT:DoFreeze(object, isFreeze)
 	if(object:IsNPC()) then
 		if(isFreeze) then object:SentenceStop() end
 		object:SetCondition(isFreeze and 67 or 68)
+	end
+	
+	//Logic for ragdolls parenting doesn't seem to work on bones :(
+	if(object:IsRagdoll()) then
+		if(isFreeze) then
+			local bonesCount = object:GetPhysicsObjectCount()
+			for bone = 1, bonesCount - 1 do
+				//Weld limb to chamber
+				constraint.Weld(self, object, 0, bone, 0)
+			
+				//Weld to self
+				constraint.Weld(object, object, 0, bone, 0)
+			end
+		else
+			//Unweld the ragdoll
+			constraint.RemoveAll(object)
+		end
 	end
 		
 	//Shared Logic
