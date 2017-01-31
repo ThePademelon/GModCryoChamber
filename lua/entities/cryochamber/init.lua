@@ -36,6 +36,9 @@ function ENT:Initialize()
 	//Prep light status transmission
 	util.AddNetworkString("LightStatus")
 	
+	//Stuff for ensuring safe disposal
+	self.disposed = false
+	
 	//WAKE ME UP INSIDE
 	self:GetPhysicsObject():Wake()
 end
@@ -53,6 +56,7 @@ end
 function ENT:OnRemove()
 	//Make sure nothing is stuck frozen
 	self.state = false
+	self.disposed = true
 	self:Think()
 	
 	//Make sure the rest of the object is disposed
@@ -79,9 +83,9 @@ function ENT:Think()
 	end
 	
 	//enumerate ents
-	for count,value in pairs(ents.GetAll()) do
+	for count,value in pairs(self.disposed and self:GetChildren() or ents.GetAll()) do
 		local isExcluded = value == self.roof || value == self.floor || value == self.door || value == self
-		if(self:IsInChamber(value) && !isExcluded) then
+		if(self:IsInChamber(value) && !isExcluded || self.disposed) then
 			if(value:IsRagdoll()) then
 				self:DoFreezeRagdoll(value, self.state)
 			elseif(value:IsPlayer()) then
