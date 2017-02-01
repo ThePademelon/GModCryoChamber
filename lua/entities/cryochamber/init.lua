@@ -40,10 +40,6 @@ function ENT:Initialize()
 	self:GetPhysicsObject():Wake()
 end
 
-function ENT:SetupDataTables()
-	self:NetworkVar("Bool", 0, "FreezeStatus")
-end
-
 function ENT:Use(cause, caller)
 	//Close or open the door
 	self:SetFreezeStatus(self.door:ChangeDoorState())
@@ -83,21 +79,21 @@ function ENT:Think()
 		local isExcluded = value == self.roof || value == self.floor || value == self.door || value == self
 		if(self:IsInChamber(value) && !isExcluded || self.disposed) then
 			if(value:IsRagdoll()) then
-				self:DoFreezeRagdoll(value, self:GetFreezeState())
+				self:DoFreezeRagdoll(value, self:GetFreezeStatus())
 			elseif(value:IsPlayer()) then
-				self:DoFreezePlayer(value, self:GetFreezeState())
+				self:DoFreezePlayer(value, self:GetFreezeStatus())
 			elseif(value:IsNPC()) then
-				self:DoFreezeNPC(value, self:GetFreezeState())
+				self:DoFreezeNPC(value, self:GetFreezeStatus())
 			elseif(value.Base == "base_nextbot") then
-				self:DoFreezeNextBot(value, self:GetFreezeState())
+				self:DoFreezeNextBot(value, self:GetFreezeStatus())
 			else
-				self:DoFreezeEnt(value, self:GetFreezeState())
+				self:DoFreezeEnt(value, self:GetFreezeStatus())
 			end
 		end
 	end
 	
 	//Make the frosty smoke
-	if(self:GetFreezeState()) then
+	if(self:GetFreezeStatus()) then
 		local data = EffectData()
 		data:SetOrigin(self:GetPos() + Vector(0,0,42))
 		util.Effect("Frost", data)

@@ -8,3 +8,7 @@ ENT.Purpose = "To freeze"
 ENT.Instructions = "Press E to freeze contents. Make sure you have a friend to unfreeze you if you freeze yourself."
 ENT.Spawnable = true
 ENT.AdminOnly = true
+
+function ENT:SetupDataTables()
+	self:NetworkVar("Bool", 0, "FreezeStatus")
+end
