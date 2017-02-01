@@ -14,16 +14,11 @@ function ENT:Initialize()
 	self.freezelight.brightness = -10
 	self.freezelight.Decay = 1
 	self.freezelight.Size = 750
-	
-	net.Receive("LightStatus", function()
-		//Change the light on or off based on server message
-		local state = net.ReadBool()
-		self.freezelight.brightness = state and 2 or -10
-	end)
 end
 
 function ENT:Think()
 	//Keep light up-to-date
+	self.freezelight.brightness = self:GetFreezeStatus() and 2 or -10
 	self.freezelight.pos = self:GetPos()
 	self.freezelight.DieTime = CurTime() + 1
 end

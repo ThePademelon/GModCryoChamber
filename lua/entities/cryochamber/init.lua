@@ -32,10 +32,7 @@ function ENT:Initialize()
 	self.floor:Spawn()
 	self.floor:SetPos(self:GetPos() + Vector(0,0,-46))
 	self.floor:SetParent(self)
-	
-	//Prep light status transmission
-	util.AddNetworkString("LightStatus")
-	
+		
 	//Stuff for ensuring safe disposal
 	self.disposed = false
 	
@@ -45,17 +42,12 @@ end
 
 function ENT:Use(cause, caller)
 	//Close or open the door
-	self.state = self.door:ChangeDoorState()
-	
-	//Send the current light status
-	net.Start("LightStatus")
-	net.WriteBool(self.state)
-	net.Broadcast()
+	self:SetFreezeStatus(self.door:ChangeDoorState())
 end
 
 function ENT:OnRemove()
 	//Make sure nothing is stuck frozen
-	self.state = false
+	self:SetFreezeStatus(false)
 	self.disposed = true
 	self:Think()
 	
@@ -87,21 +79,21 @@ function ENT:Think()
 		local isExcluded = value == self.roof || value == self.floor || value == self.door || value == self
 		if(self:IsInChamber(value) && !isExcluded || self.disposed) then
 			if(value:IsRagdoll()) then
-				self:DoFreezeRagdoll(value, self.state)
+				self:DoFreezeRagdoll(value, self:GetFreezeStatus())
 			elseif(value:IsPlayer()) then
-				self:DoFreezePlayer(value, self.state)
+				self:DoFreezePlayer(value, self:GetFreezeStatus())
 			elseif(value:IsNPC()) then
-				self:DoFreezeNPC(value, self.state)
+				self:DoFreezeNPC(value, self:GetFreezeStatus())
 			elseif(value.Base == "base_nextbot") then
-				self:DoFreezeNextBot(value, self.state)
+				self:DoFreezeNextBot(value, self:GetFreezeStatus())
 			else
-				self:DoFreezeEnt(value, self.state)
+				self:DoFreezeEnt(value, self:GetFreezeStatus())
 			end
 		end
 	end
 	
 	//Make the frosty smoke
-	if(self.state) then
+	if(self:GetFreezeStatus()) then
 		local data = EffectData()
 		data:SetOrigin(self:GetPos() + Vector(0,0,42))
 		util.Effect("Frost", data)
