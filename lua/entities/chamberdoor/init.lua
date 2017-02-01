@@ -16,17 +16,24 @@ function ENT:Use(cause, caller)
 	self:GetParent():Use(cause, caller, USE_ON, 0)
 end
 
-function ENT:ChangeDoorState()
-	//Switch mode and apply closing/opening visuals
-	local isOpen = self:GetSolid() == SOLID_NONE
-	self:PhysicsInit(isOpen and SOLID_VPHYSICS or SOLID_NONE)
-	self:SetRenderMode(isOpen and RENDERMODE_TRANSALPHA or RENDERMODE_NONE)
-	
+function ENT:ChangeDoorState()	
 	//Play the open/close sound
 	sound.Play("buttons/og_switch_press_01.wav", self:GetPos(), 100, 100, 1)
-
-	return isOpen
+	
+	self:SetFreezeStatus(!self:GetFreezeStatus())
 end
 
 function ENT:Think()
+	self:PhysicsInit(self:GetFreezeStatus() and SOLID_VPHYSICS or SOLID_NONE)
+	self:SetRenderMode(self:GetFreezeStatus() and RENDERMODE_TRANSALPHA or RENDERMODE_NONE)
+end
+
+//Get freeze status from chamber
+function ENT:GetFreezeStatus()
+	return self:GetParent():GetFreezeStatus()
+end
+
+//Forward freeze status
+function ENT:SetFreezeStatus(value)
+	self:GetParent():SetFreezeStatus(value)
 end

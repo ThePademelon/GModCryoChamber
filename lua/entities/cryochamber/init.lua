@@ -2,8 +2,27 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
-local freezeColor = Color(0, 100, 120, 255)
-local defaultColor = Color(255, 255, 255, 255)
+concommand.Add("cryochamber", function(thePlayer, theCommand, args, argString)
+	//Nothing inputted, return help screen
+	if(argString == "" || args[1] == "help") then
+		print("[CryoChamber Help]")
+		print("COMMAND		-	EFFECT")
+		print("freezeall	-	Sets all chambers to freeze mode")
+		print("unfreezeall	-	Sets all chambers to unfreeze mode")
+		print("help			-	Shows this help text, yes the one you are reading right now")
+	end
+	
+	if(args[1] == "freezeall" || args[1] == "unfreezeall") then
+		for count, ent in pairs(ents.GetAll()) do
+			if(ent:GetClass() == "cryochamber") then
+				ent:SetFreezeStatus(args[1] == "freezeall")
+			end
+		end
+	end
+end)
+
+freezeColor = Color(0, 100, 120, 255)
+defaultColor = Color(255, 255, 255, 255)
 
 //HOOKS
 
@@ -42,7 +61,7 @@ end
 
 function ENT:Use(cause, caller)
 	//Close or open the door
-	self:SetFreezeStatus(self.door:ChangeDoorState())
+	self.door:ChangeDoorState()
 end
 
 function ENT:OnRemove()
