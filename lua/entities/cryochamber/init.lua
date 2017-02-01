@@ -2,24 +2,35 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+//CONSOLE REGISTRATION
+
 concommand.Add("cryochamber", function(thePlayer, theCommand, args, argString)
-	//Nothing inputted, return help screen
 	if(argString == "" || args[1] == "help") then
-		print("[CryoChamber Help]")
-		print("COMMAND		-	EFFECT")
-		print("freezeall	-	Sets all chambers to freeze mode")
-		print("unfreezeall	-	Sets all chambers to unfreeze mode")
-		print("help			-	Shows this help text, yes the one you are reading right now")
-	end
-	
-	if(args[1] == "freezeall" || args[1] == "unfreezeall") then
+		//Nothing inputted, return help screen
+		print("+-----------------------------------------------------------------------------------+")
+		print("|                                 CryoChamber Help                                  |")
+		print("+--------------------+--------------------------------------------------------------+")
+		print("|      COMMAND       |                            EFFECT                            |")
+		print("+--------------------+--------------------------------------------------------------+")
+		print("| freezeall          | Sets all chambers to freeze mode                             |")
+		print("| unfreezeall        | Sets all chambers to unfreeze mode                           |")
+		print("| help               | Shows this help text, yes the one you are reading right now  |")
+		print("+--------------------+--------------------------------------------------------------+")
+	elseif(args[1] == "freezeall" || args[1] == "unfreezeall") then
+		//Freeze all command, find all chambers and set the freeze status
 		for count, ent in pairs(ents.GetAll()) do
 			if(ent:GetClass() == "cryochamber") then
 				ent:SetFreezeStatus(args[1] == "freezeall")
 			end
 		end
+		print("Successfully updated all chambers")
+	else
+		//Something not expected
+		print("Unrecognised command, type 'cryochamber help' for available commands")
 	end
 end)
+
+//COLOR CONSTANTS
 
 freezeColor = Color(0, 100, 120, 255)
 defaultColor = Color(255, 255, 255, 255)
