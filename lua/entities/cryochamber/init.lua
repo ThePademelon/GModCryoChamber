@@ -17,13 +17,18 @@ concommand.Add("cryochamber", function(thePlayer, theCommand, args, argString)
 		print("| help               | Shows this help text, yes the one you are reading right now  |")
 		print("+--------------------+--------------------------------------------------------------+")
 	elseif(args[1] == "freezeall" || args[1] == "unfreezeall") then
-		//Freeze all command, find all chambers and set the freeze status
-		for count, ent in pairs(ents.GetAll()) do
-			if(ent:GetClass() == "cryochamber") then
-				ent:SetFreezeStatus(args[1] == "freezeall")
+		//This command is admin only
+		if(thePlayer:IsSuperAdmin() || thePlayer:IsAdmin()) then
+			//Freeze all command, find all chambers and set the freeze status
+			for count, ent in pairs(ents.GetAll()) do
+				if(ent:GetClass() == "cryochamber") then
+					ent:SetFreezeStatus(args[1] == "freezeall")
+				end
 			end
+			print("Successfully updated all chambers")
+		else
+			print("You do not have access to this command")
 		end
-		print("Successfully updated all chambers")
 	else
 		//Something not expected
 		print("Unrecognised command, type 'cryochamber help' for available commands")
