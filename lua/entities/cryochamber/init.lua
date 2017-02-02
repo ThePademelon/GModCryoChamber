@@ -199,8 +199,10 @@ function ENT:DoFreezeEnt(entity, isFreeze)
 			end
 		end
 		
-		//Don't unparent or parent an item without a base, it's probably a viewmodel/held item
-		if(entity.Base != nil || entity:GetClass() == "prop_physics") then self:AttachMoveChild(entity, isFreeze) end
+		//Don't unparent or parent an item that already has a parent unless it's the chamber
+		local parent = entity:GetParent()
+		local hasParent = IsValid(parent)
+		if(!hasParent || hasParent && parent == self) then self:AttachMoveChild(entity, isFreeze) end
 		
 		entity:SetColor(isFreeze and freezeColor or defaultColor)
 end
