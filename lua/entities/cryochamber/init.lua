@@ -62,17 +62,20 @@ function ENT:Initialize()
 	self.door = ents.Create("chamberdoor")
 	self.door:Spawn()
 	self.door:SetPos(self:GetPos())
-	self.door:SetParent(self)
 	self.door:SetAngles(Angle(0, 180, 0))
+	constraint.Weld(self, self.door, 0, 0, 0, true, false)
+	self.door:SetParent(self)
 	
 	//Add top and bottom
 	self.roof = ents.Create("chambertopper")
 	self.roof:Spawn()
 	self.roof:SetPos(self:GetPos() + Vector(0,0,46))
+	constraint.Weld(self, self.roof, 0, 0, 0, true, false)
 	self.roof:SetParent(self)
 	self.floor = ents.Create("chambertopper")
 	self.floor:Spawn()
 	self.floor:SetPos(self:GetPos() + Vector(0,0,-46))
+	constraint.Weld(self, self.floor, 0, 0, 0, true, false)
 	self.floor:SetParent(self)
 		
 	//Stuff for ensuring safe disposal
