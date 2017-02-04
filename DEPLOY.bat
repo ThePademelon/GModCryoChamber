@@ -5,3 +5,4 @@ E:\Steam\steamapps\common\GarrysMod\bin\gmpublish.exe update -id 850437362 -addo
 
 :CLEANUP
 DEL %GMALOCATION%
+PAUSE
