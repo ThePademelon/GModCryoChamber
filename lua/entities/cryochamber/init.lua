@@ -15,6 +15,7 @@ concommand.Add("cryochamber", function(thePlayer, theCommand, args, argString)
 		print("| freezeall          | Sets all chambers to freeze mode                             |")
 		print("| unfreezeall        | Sets all chambers to unfreeze mode                           |")
 		print("| help               | Shows this help text, yes the one you are reading right now  |")
+		print("| whatsfrozen        | Lists all entities that are currently frozen by a chamber    |")
 		print("+--------------------+--------------------------------------------------------------+")
 	elseif(args[1] == "freezeall" || args[1] == "unfreezeall") then
 		//This command is admin only
@@ -28,6 +29,12 @@ concommand.Add("cryochamber", function(thePlayer, theCommand, args, argString)
 			print("Successfully updated all chambers")
 		else
 			print("You do not have access to this command")
+		end
+	elseif(args[1] == "whatsfrozen") then
+		for count, ent in pairs(ents.GetAll()) do
+			if(ent:GetClass() == "cryochamber") then
+				PrintTable(ent.frozenItems)
+			end
 		end
 	else
 		//Something not expected
@@ -70,6 +77,7 @@ function ENT:Initialize()
 		
 	//Stuff for ensuring safe disposal
 	self.disposed = false
+	self.frozenItems = {}
 	
 	//WAKE ME UP INSIDE
 	self:GetPhysicsObject():Wake()
@@ -110,25 +118,45 @@ function ENT:Think()
 	end
 	
 	//enumerate ents
-	for count,value in pairs(self.disposed and self:GetChildren() or ents.GetAll()) do
+	local freezeStatus = self:GetFreezeStatus()
+	local theTable = {}
+	for count,value in pairs(self.disposed and self.frozenItems or ents.GetAll()) do
 		local isExcluded = value == self.roof || value == self.floor || value == self.door || value == self
 		if(self:IsInChamber(value) && !isExcluded || self.disposed) then
+			//Freeze items depending on their type
 			if(value:IsRagdoll()) then
-				self:DoFreezeRagdoll(value, self:GetFreezeStatus())
+				self:DoFreezeRagdoll(value, freezeStatus)
 			elseif(value:IsPlayer()) then
-				self:DoFreezePlayer(value, self:GetFreezeStatus())
+				self:DoFreezePlayer(value, freezeStatus)
 			elseif(value:IsNPC()) then
-				self:DoFreezeNPC(value, self:GetFreezeStatus())
+				self:DoFreezeNPC(value, freezeStatus)
 			elseif(value.Base == "base_nextbot") then
-				self:DoFreezeNextBot(value, self:GetFreezeStatus())
+				self:DoFreezeNextBot(value, freezeStatus)
 			else
-				self:DoFreezeEnt(value, self:GetFreezeStatus())
+				self:DoFreezeEnt(value, freezeStatus)
+			end
+			
+			//Keep track of what's frozen
+			table.insert(theTable, value)
+		end
+	end
+	
+	//Apply frozenItems table updates
+	for count, value in pairs(theTable) do
+		local hasValue = table.HasValue(self.frozenItems, value)
+		if(freezeStatus) then
+			if(!hasValue) then
+				table.insert(self.frozenItems, value)
+			end
+		else
+			if(hasValue) then
+				table.RemoveByValue(self.frozenItems, value)
 			end
 		end
 	end
 	
 	//Make the frosty smoke
-	if(self:GetFreezeStatus()) then
+	if(freezeStatus) then
 		local data = EffectData()
 		data:SetOrigin(self:GetPos() + Vector(0,0,42))
 		util.Effect("Frost", data)
