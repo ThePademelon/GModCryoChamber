@@ -92,6 +92,14 @@ function ENT:OnRemove()
 	//Make sure nothing is stuck frozen
 	self:SetFreezeStatus(false)
 	self.disposed = true
+	
+	//Clean table for entitys that no longer exist
+	for count, value in pairs(self.frozenItems) do
+		if(!IsValid(value)) then
+			self.frozenItems[count] = nil
+		end
+	end
+	
 	self:Think()
 	
 	//Make sure the rest of the object is disposed
