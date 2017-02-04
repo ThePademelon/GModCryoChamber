@@ -177,6 +177,7 @@ end
 //METHODS
 
 function ENT:DoFreezePlayer(thePlayer, isFreeze)
+		isFreeze = isFreeze && thePlayer:Alive()
 		thePlayer:Freeze(isFreeze)
 		thePlayer:SetMoveType(isFreeze and MOVETYPE_NONE or MOVETYPE_WALK)
 		thePlayer:SetColor(isFreeze and freezeColor or defaultColor)
