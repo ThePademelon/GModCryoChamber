@@ -7,6 +7,7 @@ function ENT:Initialize()
 	self:SetModel("models/hunter/tubes/tube2x2x2d.mdl")
 	self:SetMaterial("phoenix_storms/window")
 	self:SetRenderMode(RENDERMODE_NONE)
+	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetUseType(SIMPLE_USE)
 	self:SetColor(Color(255,255,255,120))
 end
@@ -24,8 +25,8 @@ function ENT:ChangeDoorState()
 end
 
 function ENT:Think()
-	self:PhysicsInit(self:GetFreezeStatus() and SOLID_VPHYSICS or SOLID_NONE)
 	self:SetRenderMode(self:GetFreezeStatus() and RENDERMODE_TRANSALPHA or RENDERMODE_NONE)
+	self:SetSolid(self:GetFreezeStatus() and SOLID_VPHYSICS or SOLID_NONE)
 end
 
 //Get freeze status from chamber
