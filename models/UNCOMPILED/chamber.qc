@@ -8,5 +8,5 @@ $sequence idle "chamber_idle.smd" loop fps 1
 $collisionmodel "chamber_physics.smd"
 {
 	$concave
-	$mass 1000
+	$automass
 }
