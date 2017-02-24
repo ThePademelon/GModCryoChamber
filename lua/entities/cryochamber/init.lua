@@ -51,8 +51,7 @@ defaultColor = Color(255, 255, 255, 255)
 
 function ENT:Initialize()
 	//Setup entity
-	self:SetModel("models/hunter/tubes/tube2x2x2b.mdl")
-	self:SetMaterial("models/gibs/metalgibs/metal_gibs")
+	self:SetModel("models/chamber/chamber.mdl")
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
@@ -62,21 +61,8 @@ function ENT:Initialize()
 	self.door = ents.Create("chamberdoor")
 	self.door:Spawn()
 	self.door:SetPos(self:GetPos())
-	self.door:SetAngles(Angle(0, 180, 0))
+	self.door.chamber = self
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
-	self.door:SetParent(self)
-	
-	//Add top and bottom
-	self.roof = ents.Create("chambertopper")
-	self.roof:Spawn()
-	self.roof:SetPos(self:GetPos() + Vector(0,0,46))
-	constraint.Weld(self, self.roof, 0, 0, 0, true, false)
-	self.roof:SetParent(self)
-	self.floor = ents.Create("chambertopper")
-	self.floor:Spawn()
-	self.floor:SetPos(self:GetPos() + Vector(0,0,-46))
-	constraint.Weld(self, self.floor, 0, 0, 0, true, false)
-	self.floor:SetParent(self)
 		
 	//Stuff for ensuring safe disposal
 	self.disposed = false
@@ -107,8 +93,6 @@ function ENT:OnRemove()
 	
 	//Make sure the rest of the object is disposed
 	if(IsValid(self.door)) then self.door:Remove() end
-	if(IsValid(self.roof)) then self.roof:Remove() end
-	if(IsValid(self.floor)) then self.floor:Remove() end
 end
 
 //Overrides the default spawning behaviour
@@ -124,7 +108,7 @@ end
 
 function ENT:Think()
 	//If something is missing from the chamber, it should delete itself
-	if(!(IsValid(self) && IsValid(self.door) && IsValid(self.roof) && IsValid(self.floor))) then
+	if(!(IsValid(self) && IsValid(self.door))) then
 		self:Remove()
 	end
 	
@@ -132,7 +116,7 @@ function ENT:Think()
 	local freezeStatus = self:GetFreezeStatus()
 	local theTable = {}
 	for count,value in pairs(self.disposed and self.frozenItems or ents.GetAll()) do
-		local isExcluded = value == self.roof || value == self.floor || value == self.door || value == self
+		local isExcluded = value == self.door || value == self
 		if(self:IsInChamber(value) && !isExcluded || self.disposed) then
 			//Freeze items depending on their type
 			if(value:IsRagdoll()) then
