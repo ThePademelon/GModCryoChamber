@@ -1,4 +1,4 @@
-"UnLitGeneric"
+VertexLitGeneric
 {
-	$basetexture "chamber/chamber"
+	$basetexture "chamber\chamber"
 }
