@@ -153,7 +153,7 @@ function ENT:Think()
 	//Make the frosty smoke
 	if(freezeStatus) then
 		local data = EffectData()
-		data:SetOrigin(self:GetPos() + Vector(0,0,115))
+		data:SetOrigin(self:GetPos() + Vector(0,0,90))
 		util.Effect("Frost", data)
 	end
 end

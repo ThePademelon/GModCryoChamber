@@ -1,5 +1,5 @@
 $ModelName "chamberdoor\chamberdoor.mdl"
-$Scale 40
+$Scale 32
 $body chamber "chamberdoor.smd"
 $staticprop
 $surfaceprop "glass"

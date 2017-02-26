@@ -1,5 +1,5 @@
 $ModelName "chamber\chamber.mdl"
-$Scale 40
+$Scale 32
 $body chamber "chamber.smd"
 $staticprop
 $surfaceprop "metal"
