@@ -4,8 +4,7 @@ include("shared.lua")
 
 function ENT:Initialize()
 	//Setup entity
-	self:SetModel("models/hunter/tubes/tube2x2x2d.mdl")
-	self:SetMaterial("phoenix_storms/window")
+	self:SetModel("models/chamberdoor/chamberdoor.mdl")
 	self:SetRenderMode(RENDERMODE_NONE)
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetUseType(SIMPLE_USE)
@@ -14,7 +13,7 @@ end
 
 //Forward the call to the main code
 function ENT:Use(cause, caller)
-	self:GetParent():Use(cause, caller, USE_ON, 0)
+	self.chamber:Use(cause, caller, USE_ON, 0)
 end
 
 function ENT:ChangeDoorState()	
@@ -31,10 +30,10 @@ end
 
 //Get freeze status from chamber
 function ENT:GetFreezeStatus()
-	return self:GetParent():GetFreezeStatus()
+	return self.chamber:GetFreezeStatus()
 end
 
 //Forward freeze status
 function ENT:SetFreezeStatus(value)
-	self:GetParent():SetFreezeStatus(value)
+	self.chamber:SetFreezeStatus(value)
 end

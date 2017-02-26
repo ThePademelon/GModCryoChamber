@@ -1,0 +1,5 @@
+VertexLitGeneric
+{
+	$basetexture "chamberdoor\chamberdoor"
+	$translucent 1
+}
