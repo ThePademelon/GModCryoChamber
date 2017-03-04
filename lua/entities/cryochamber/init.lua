@@ -68,6 +68,11 @@ function ENT:Initialize()
 	self.disposed = false
 	self.frozenItems = {}
 	
+	//Setup wiremod integration
+	if(WireLib) then
+		WireLib.CreateInputs(self, {"Freeze"})
+	end
+	
 	//WAKE ME UP INSIDE
 	self:GetPhysicsObject():Wake()
 end
@@ -155,6 +160,13 @@ function ENT:Think()
 		local data = EffectData()
 		data:SetOrigin(self:GetPos() + Vector(0,0,90))
 		util.Effect("Frost", data)
+	end
+end
+
+function ENT:TriggerInput(name,value)
+	//Deal with WireMod inputs
+	if(name == "Freeze") then
+		self:SetFreezeStatus(value > 0)
 	end
 end
 
