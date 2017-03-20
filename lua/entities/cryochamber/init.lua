@@ -47,7 +47,7 @@ end)
 freezeColor = Color(0, 100, 120, 255)
 defaultColor = Color(255, 255, 255, 255)
 internalHeight = 100
-internalRadius = 7
+internalRadius = 30
 
 //HOOKS
 
@@ -249,9 +249,8 @@ function ENT:IsInChamber(entity)
 	local isCorrectHeight = self.baseBonePos.z < objectRelPos.z && objectRelPos.z < self.internalTopPos.z || self.baseBonePos.z > objectRelPos.z && objectRelPos.z > self.internalTopPos.z
 	
 	if(isCorrectHeight) then
-		return math.sqrt(math.abs(objectRelPos.x) + math.abs(objectRelPos.y)) < internalRadius
+		return math.sqrt(math.pow(objectRelPos.x, 2) + math.pow(objectRelPos.y, 2)) < internalRadius
 	else
 		return false
-		
 	end
 end
