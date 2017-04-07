@@ -1,4 +1,5 @@
 VertexLitGeneric
 {
 	$basetexture "chamber\chamber"
+	$halflambert 1
 }
