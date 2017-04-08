@@ -42,10 +42,12 @@ concommand.Add("cryochamber", function(thePlayer, theCommand, args, argString)
 	end
 end)
 
-//COLOR CONSTANTS
+// CONSTANTS
 
 freezeColor = Color(0, 100, 120, 255)
 defaultColor = Color(255, 255, 255, 255)
+internalHeight = 100
+internalRadius = 30
 
 //HOOKS
 
@@ -63,6 +65,10 @@ function ENT:Initialize()
 	self.door:SetPos(self:GetPos())
 	self.door.chamber = self
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
+	
+	//Define freeze bounds
+	self.baseBonePos = self:WorldToLocal(self:GetBonePosition(self:LookupBone("static_prop")))
+	self.internalTopPos = self.baseBonePos + Vector(0,0,internalHeight)
 		
 	//Stuff for ensuring safe disposal
 	self.disposed = false
@@ -158,7 +164,7 @@ function ENT:Think()
 	//Make the frosty smoke
 	if(freezeStatus) then
 		local data = EffectData()
-		data:SetOrigin(self:GetPos() + Vector(0,0,90))
+		data:SetOrigin(self:LocalToWorld(self.internalTopPos))
 		util.Effect("Frost", data)
 	end
 end
@@ -251,10 +257,12 @@ function ENT:AttachMoveChild(entity, isAttach)
 end
 
 function ENT:IsInChamber(entity)
-	//Get the corners of the chamber
-	local topCorner = self:OBBMaxs() + self:GetPos()
-	local bottomCorner = self:OBBMins() + self:GetPos()
-
-	//Check to see if the entity is within the box, I think this method only works with the corners in the right order so check both ways
-	return entity:GetPos():WithinAABox(bottomCorner, topCorner) || entity:GetPos():WithinAABox(topCorner, bottomCorner)
+	local objectRelPos = self:WorldToLocal(entity:GetPos())
+	local isCorrectHeight = self.baseBonePos.z < objectRelPos.z && objectRelPos.z < self.internalTopPos.z || self.baseBonePos.z > objectRelPos.z && objectRelPos.z > self.internalTopPos.z
+	
+	if(isCorrectHeight) then
+		return math.sqrt(math.pow(objectRelPos.x, 2) + math.pow(objectRelPos.y, 2)) < internalRadius
+	else
+		return false
+	end
 end
