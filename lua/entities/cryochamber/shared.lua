@@ -16,5 +16,6 @@ else
 end
 
 function ENT:SetupDataTables()
-	self:NetworkVar("Bool", 0, "FreezeStatus")
+	self.FreezeStatusNetworkVarString = "FreezeStatus"
+	self:NetworkVar("Bool", 0, self.FreezeStatusNetworkVarString)
 end

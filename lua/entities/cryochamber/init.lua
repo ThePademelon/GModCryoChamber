@@ -67,11 +67,11 @@ function ENT:Initialize()
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
 	
 	//Let the door listen for changes in freeze status
-	self:NetworkVarNotify("FreezeStatus", function() self.door:DoorTransition() end)
+	self:NetworkVarNotify(self.FreezeStatusNetworkVarString, function() self.door:DoorTransition() end)
 	
 	//Define freeze bounds
 	self.baseBonePos = self:WorldToLocal(self:GetBonePosition(self:LookupBone("static_prop")))
-	self.internalTopPos = self.baseBonePos + Vector(0,0,internalHeight)
+	self.internalTopPos = self.baseBonePos + Vector(0, 0, internalHeight)
 		
 	//Stuff for ensuring safe disposal
 	self.disposed = false
@@ -167,7 +167,7 @@ function ENT:Think()
 	//Make the frosty smoke
 	if(freezeStatus) then
 		local data = EffectData()
-		data:SetOrigin(self:LocalToWorld(self.internalTopPos))
+		data:SetOrigin(self:LocalToWorld(self.internalTopPos - Vector(0, 0, 10)))
 		util.Effect("Frost", data)
 	end
 end
