@@ -8,6 +8,9 @@ ENT.Instructions = "Press E to freeze contents. Make sure you have a friend to u
 ENT.Spawnable = true
 ENT.AdminOnly = true
 
+//String Constants
+freezeStatusNetworkVarString = "FreezeStatus"
+
 //Make this entity a WireMod entity if WireMod is installed
 if(WireLib) then
 	ENT.Base = "base_wire_entity"
@@ -16,6 +19,5 @@ else
 end
 
 function ENT:SetupDataTables()
-	self.FreezeStatusNetworkVarString = "FreezeStatus"
-	self:NetworkVar("Bool", 0, self.FreezeStatusNetworkVarString)
+	self:NetworkVar("Bool", 0, freezeStatusNetworkVarString)
 end

@@ -48,6 +48,7 @@ freezeColor = Color(0, 100, 120, 255)
 defaultColor = Color(255, 255, 255, 255)
 internalHeight = 100
 internalRadius = 30
+wireVarString = "ToggleFreeze"
 
 //HOOKS
 
@@ -67,7 +68,7 @@ function ENT:Initialize()
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
 	
 	//Let the door listen for changes in freeze status
-	self:NetworkVarNotify(self.FreezeStatusNetworkVarString, function() self.door:DoorTransition() end)
+	self:NetworkVarNotify(freezeStatusNetworkVarString, function() self.door:DoorTransition() end)
 	
 	//Define freeze bounds
 	self.baseBonePos = self:WorldToLocal(self:GetBonePosition(self:LookupBone("static_prop")))
@@ -79,7 +80,7 @@ function ENT:Initialize()
 	
 	//Setup wiremod integration
 	if(WireLib) then
-		WireLib.CreateInputs(self, {"Freeze"})
+		WireLib.CreateInputs(self, {wireVarString})
 	end
 	
 	//WAKE ME UP INSIDE
@@ -174,7 +175,7 @@ end
 
 function ENT:TriggerInput(name, value)
 	//Deal with WireMod inputs
-	if(name == "Freeze" && value > 0) then
+	if(name == wireVarString && value > 0) then
 		self:SetFreezeStatus(!self:GetFreezeStatus())
 	end
 end
