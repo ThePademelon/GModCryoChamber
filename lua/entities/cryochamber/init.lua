@@ -66,6 +66,9 @@ function ENT:Initialize()
 	self.door.chamber = self
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
 	
+	//Let the door listen for changes in freeze status
+	self:NetworkVarNotify("FreezeStatus", function() self.door:DoorTransition() end)
+	
 	//Define freeze bounds
 	self.baseBonePos = self:WorldToLocal(self:GetBonePosition(self:LookupBone("static_prop")))
 	self.internalTopPos = self.baseBonePos + Vector(0,0,internalHeight)
@@ -84,8 +87,8 @@ function ENT:Initialize()
 end
 
 function ENT:Use(cause, caller)
-	//Close or open the door
-	self.door:ChangeDoorState()
+	//Change the freeze status
+	self:SetFreezeStatus(!self:GetFreezeStatus())
 end
 
 function ENT:OnRemove()
@@ -169,10 +172,10 @@ function ENT:Think()
 	end
 end
 
-function ENT:TriggerInput(name,value)
+function ENT:TriggerInput(name, value)
 	//Deal with WireMod inputs
-	if(name == "Freeze") then
-		self:SetFreezeStatus(value > 0)
+	if(name == "Freeze" && value > 0) then
+		self:SetFreezeStatus(!self:GetFreezeStatus())
 	end
 end
 

@@ -12,15 +12,15 @@ function ENT:Initialize()
 end
 
 //Forward the call to the main code
-function ENT:Use(cause, caller)
-	self.chamber:Use(cause, caller, USE_ON, 0)
+function ENT:Use(cause, caller, mode, value)
+	self.chamber:Use(cause, caller, mode, value)
 end
 
-function ENT:ChangeDoorState()	
+function ENT:DoorTransition()	
 	//Play the open/close sound
 	sound.Play("buttons/og_switch_press_01.wav", self:GetPos(), 100, 100, 1)
 	
-	self:SetFreezeStatus(!self:GetFreezeStatus())
+	//TODO: Open close animation?
 end
 
 function ENT:Think()
@@ -31,9 +31,4 @@ end
 //Get freeze status from chamber
 function ENT:GetFreezeStatus()
 	return self.chamber:GetFreezeStatus()
-end
-
-//Forward freeze status
-function ENT:SetFreezeStatus(value)
-	self.chamber:SetFreezeStatus(value)
 end
