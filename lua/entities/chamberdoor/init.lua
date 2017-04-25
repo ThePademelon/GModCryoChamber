@@ -9,6 +9,11 @@ function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetUseType(SIMPLE_USE)
 	self:SetColor(Color(255,255,255,120))
+	
+	//If this isn't being created by the chamber, we need to remove this door
+	if(!string.find(debug.traceback(),"cryochamber/init.lua")) then
+		self:Remove()
+	end
 end
 
 //Forward the call to the main code
