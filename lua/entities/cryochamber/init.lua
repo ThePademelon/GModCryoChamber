@@ -96,14 +96,7 @@ function ENT:OnRemove()
 	//Make sure nothing is stuck frozen
 	self:SetFreezeStatus(false)
 	self.disposed = true
-	
-	//Clean table for entitys that no longer exist
-	for count, value in pairs(self.frozenItems) do
-		if(!IsValid(value)) then
-			self.frozenItems[count] = nil
-		end
-	end
-	
+		
 	self:Think()
 	
 	//Make sure the rest of the object is disposed
@@ -129,10 +122,10 @@ function ENT:Think()
 	
 	//enumerate ents
 	local freezeStatus = self:GetFreezeStatus()
-	local theTable = {}
-	for count,value in pairs(self.disposed and self.frozenItems or ents.GetAll()) do
+	local entsAffected = {}
+	for count,value in pairs(freezeStatus and ents.GetAll() or self.frozenItems) do
 		local isExcluded = value == self.door || value == self
-		if(self:IsInChamber(value) && !isExcluded || self.disposed) then
+		if(self:IsInChamber(value) && !isExcluded || !freezeStatus) then
 			//Freeze items depending on their type
 			if(value:IsRagdoll()) then
 				self:DoFreezeRagdoll(value, freezeStatus)
@@ -147,12 +140,12 @@ function ENT:Think()
 			end
 			
 			//Keep track of what's frozen
-			table.insert(theTable, value)
+			table.insert(entsAffected, value)
 		end
 	end
 	
 	//Apply frozenItems table updates
-	for count, value in pairs(theTable) do
+	for count, value in pairs(entsAffected) do
 		local hasValue = table.HasValue(self.frozenItems, value)
 		if(freezeStatus) then
 			if(!hasValue) then
