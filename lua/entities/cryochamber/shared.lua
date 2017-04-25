@@ -1,6 +1,6 @@
 ENT.Type = "anim"
 ENT.PrintName = "Cryogenics Chamber"
-ENT.Category = "Fun + Games"
+ENT.Category = "Pademelon's Entities"
 ENT.Author = "Laura"
 ENT.Contact = "The Pademelon on Steam"
 ENT.Purpose = "To freeze"
