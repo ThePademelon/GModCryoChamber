@@ -62,9 +62,10 @@ function ENT:Initialize()
 	
 	//Add door
 	self.door = ents.Create("chamberdoor")
+	self.door.chamber = self
 	self.door:Spawn()
 	self.door:SetPos(self:GetPos())
-	self.door.chamber = self
+	self.door:SetAngles(self:GetAngles())
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
 	
 	//Let the door listen for changes in freeze status

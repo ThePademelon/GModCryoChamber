@@ -10,8 +10,8 @@ function ENT:Initialize()
 	self:SetUseType(SIMPLE_USE)
 	self:SetColor(Color(255,255,255,120))
 	
-	//If this isn't being created by the chamber, we need to remove this door
-	if(!string.find(debug.traceback(),"cryochamber/init.lua")) then
+	//If this was made without a chamber assigned then destroy it
+	if(!IsValid(self.chamber)) then
 		self:Remove()
 	end
 end
