@@ -68,7 +68,7 @@ function ENT:Initialize()
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
 	
 	//Let the door listen for changes in freeze status
-	self:NetworkVarNotify(freezeStatusNetworkVarString, self:FreezeStatusChanged)
+	self:NetworkVarNotify(freezeStatusNetworkVarString, self.FreezeStatusChanged)
 	
 	//Define freeze bounds
 	self.baseBonePos = self:WorldToLocal(self:GetBonePosition(self:LookupBone("static_prop")))
@@ -86,7 +86,7 @@ function ENT:Initialize()
 	self:GetPhysicsObject():Wake()
 end
 
-function ENT:FreezeStatusChanged() then
+function ENT:FreezeStatusChanged()
 	//Tell the door to change state
 	if(IsValid(self.door)) then
 		self.door:DoorTransition()
