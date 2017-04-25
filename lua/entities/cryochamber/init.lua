@@ -126,8 +126,19 @@ function ENT:Think()
 		self:Remove()
 	end
 	
-	//enumerate ents
+	//Get the freeze status once so it doesn't change while we're doing stuff
 	local freezeStatus = self:GetFreezeStatus()
+	
+	//Clean up frozen items list if we're going to do an unfreeze
+	if(!freezeStatus) then
+		for count, value in pairs(self.frozenItems) do
+			if(!IsValid(value)) then
+				self.frozenItems[count] = nil
+			end
+		end
+	end
+	
+	//enumerate ents
 	local entsAffected = {}
 	for count,value in pairs(freezeStatus and ents.GetAll() or self.frozenItems) do
 		local isExcluded = value == self.door || value == self
