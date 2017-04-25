@@ -68,14 +68,13 @@ function ENT:Initialize()
 	constraint.Weld(self, self.door, 0, 0, 0, true, false)
 	
 	//Let the door listen for changes in freeze status
-	self:NetworkVarNotify(freezeStatusNetworkVarString, function() self.door:DoorTransition() end)
+	self:NetworkVarNotify(freezeStatusNetworkVarString, self:FreezeStatusChanged)
 	
 	//Define freeze bounds
 	self.baseBonePos = self:WorldToLocal(self:GetBonePosition(self:LookupBone("static_prop")))
 	self.internalTopPos = self.baseBonePos + Vector(0, 0, internalHeight)
 		
 	//Stuff for ensuring safe disposal
-	self.disposed = false
 	self.frozenItems = {}
 	
 	//Setup wiremod integration
@@ -87,6 +86,13 @@ function ENT:Initialize()
 	self:GetPhysicsObject():Wake()
 end
 
+function ENT:FreezeStatusChanged() then
+	//Tell the door to change state
+	if(IsValid(self.door)) then
+		self.door:DoorTransition()
+	end
+end
+
 function ENT:Use(cause, caller)
 	//Change the freeze status
 	self:SetFreezeStatus(!self:GetFreezeStatus())
@@ -95,7 +101,6 @@ end
 function ENT:OnRemove()
 	//Make sure nothing is stuck frozen
 	self:SetFreezeStatus(false)
-	self.disposed = true
 		
 	self:Think()
 	
